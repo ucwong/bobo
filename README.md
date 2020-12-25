@@ -15,6 +15,7 @@ go build main.go
 ./main
 ```
 http://localhost:8080/get?k=1
+
 or
 ```
 curl http://localhost:8080/get?k=1
