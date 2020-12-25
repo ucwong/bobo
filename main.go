@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	badger "github.com/dgraph-io/badger/v2"
 	"log"
 	"net/http"
+
+	badger "github.com/dgraph-io/badger/v2"
 )
 
 var db *badger.DB
