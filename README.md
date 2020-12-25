@@ -1,5 +1,8 @@
 # bobo
-## Simple webserver
+## Simplest webserver but available
+
+To implement all the needed funcs of a webserver production with the simplest ways
+
 ```
 go run main.go
 ```
