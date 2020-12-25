@@ -2,10 +2,9 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
-
-	"io/ioutil"
 
 	badger "github.com/dgraph-io/badger/v2"
 )
