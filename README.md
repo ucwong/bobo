@@ -1,7 +1,7 @@
 # bobo
 ## Simplest webserver but available
 
-### To implement all the needed funcs of a webserver production with the simplest ways
+#### To implement all the funcs of a webserver production with the simplest ways, you can change the parts as needed
 
 #### Get, Set and Persistence
 
