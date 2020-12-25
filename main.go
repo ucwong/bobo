@@ -2,10 +2,24 @@ package main
 
 import (
 	"fmt"
+	badger "github.com/dgraph-io/badger/v2"
+	"log"
 	"net/http"
 )
 
+var db *badger.DB
+
 func main() {
+	opts := badger.DefaultOptions("/tmp/badger")
+	b, err := badger.Open(opts)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer b.Close()
+	db = b
+
+	fmt.Println("Badger started")
+
 	http.HandleFunc("/", Handler)
 
 	http.ListenAndServe(":8080", nil)
@@ -36,7 +50,7 @@ func Get(k string) string {
 
 	//TODO
 
-	return "Get some value with key=" + k
+	return get(k)
 }
 
 func Set(k, v string) error {
@@ -44,9 +58,39 @@ func Set(k, v string) error {
 
 	//TODO
 
-	return nil
+	return set(k, v)
 }
 
 func Default() string {
 	return "method not found"
+}
+
+func set(k, v string) error {
+	err := db.Update(func(txn *badger.Txn) error {
+		err := txn.Set([]byte(k), []byte(v))
+		return err
+	})
+	return err
+}
+
+func get(k string) string {
+	var v string
+	err := db.View(func(txn *badger.Txn) error {
+		item, err := txn.Get([]byte(k))
+		if err != nil {
+			return err
+		}
+		val, err := item.ValueCopy(nil)
+		if err != nil {
+			return err
+		}
+		v = string(val)
+		fmt.Printf("The answer is: %s\n", val)
+		return nil
+	})
+
+	if err != nil {
+		return ""
+	}
+	return v
 }
