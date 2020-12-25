@@ -6,6 +6,7 @@ To implement all the funcs of a webserver production with the simplest ways, you
 
 ### (Feel free to fork it and add advanced logics and features)
 
+## How to run it ?
 ```
 go run main.go
 ```
@@ -14,6 +15,7 @@ or
 go build main.go
 ./main
 ```
+## How to use it ?
 http://localhost:8080/get?k=1
 
 or
