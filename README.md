@@ -15,3 +15,6 @@ Get some value with key=1
 http://localhost:8080/set?k=1&v=2
 
 Set invoke, set!
+
+#### Use badger as the storage
+https://github.com/dgraph-io/badger
