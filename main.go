@@ -15,14 +15,17 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	method := r.URL.Path[1:]
 	q := r.URL.Query()
 
-	var res string
+	var res = "suc"
 	switch method {
 	case "get":
 		res = Get(q.Get("k"))
 	case "set":
-		Set(q.Get("k"), q.Get("v"))
+		err := Set(q.Get("k"), q.Get("v"))
+		if err != nil {
+			res = "failed"
+		}
 	default:
-		Default()
+		res = Default()
 	}
 
 	fmt.Fprintf(w, res)
@@ -36,12 +39,14 @@ func Get(k string) string {
 	return "Get some value with key=" + k
 }
 
-func Set(k, v string) {
+func Set(k, v string) error {
 	fmt.Println("Do set key=" + k + ", value=" + v)
 
 	//TODO
+
+	return nil
 }
 
-func Default() {
-	//fmt.Println("Do nothing")
+func Default() string {
+	return "method not found"
 }
