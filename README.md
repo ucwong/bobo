@@ -10,6 +10,11 @@
 ```
 go run main.go
 ```
+or 
+```
+go build main.go
+./main
+```
 http://localhost:8080/get?k=1
 
 Get some value with key=1
