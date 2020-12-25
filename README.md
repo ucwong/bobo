@@ -33,5 +33,9 @@ curl http://localhost:8080/set?k=1\&v=2
 
 Set invoke, set!
 
-#### Use badger as the storage
+#### Storage
 https://github.com/dgraph-io/badger
+
+or
+
+https://github.com/syndtr/goleveldb
