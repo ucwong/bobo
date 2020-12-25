@@ -8,14 +8,10 @@
 ```
 go run main.go
 ```
-http://localhost:8080/
+http://localhost:8080/get?k=1
 
-Hello, !
+Get some value with key=1
 
-http://localhost:8080/get
-
-Get invoke, get!
-
-http://localhost:8080/set
+http://localhost:8080/set?k=1&v=2
 
 Set invoke, set!
