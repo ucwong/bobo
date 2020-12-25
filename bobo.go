@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 
+	"io/ioutil"
+
 	badger "github.com/dgraph-io/badger/v2"
 )
 
@@ -16,6 +18,11 @@ func main() {
 		log.Fatal(err)
 	}
 	defer bg.Close()
+
+	bak, err := ioutil.TempFile("badger", "badger.bak")
+	_, err = bg.Backup(bak, 0)
+	defer bak.Close()
+
 	db = bg
 
 	fmt.Println("Badger started")
