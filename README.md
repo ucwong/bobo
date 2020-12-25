@@ -8,12 +8,12 @@ To implement all the funcs of a webserver production with the simplest ways, you
 
 ## How to run it ?
 ```
-go run main.go
+go run bobo.go
 ```
 or 
 ```
-go build main.go
-./main
+go build bobo.go
+./bobo
 ```
 ## How to use it ?
 http://localhost:8080/get?k=1
