@@ -11,8 +11,7 @@ import (
 var db *badger.DB
 
 func main() {
-	opts := badger.DefaultOptions("/tmp/badger")
-	bg, err := badger.Open(opts)
+	bg, err := badger.Open(badger.DefaultOptions("badger"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -62,22 +61,21 @@ func Default() string {
 	return "method not found"
 }
 
-func set(k, v string) error {
+func set(k, v string) (err error) {
 	if len(k) == 0 || len(v) == 0 {
 		return nil
 	}
-	err := db.Update(func(txn *badger.Txn) error {
+	err = db.Update(func(txn *badger.Txn) error {
 		err := txn.Set([]byte(k), []byte(v))
 		return err
 	})
-	return err
+	return
 }
 
-func get(k string) string {
+func get(k string) (v string) {
 	if len(k) == 0 {
 		return ""
 	}
-	var v string
 	err := db.View(func(txn *badger.Txn) error {
 		item, err := txn.Get([]byte(k))
 		if err != nil {
@@ -94,5 +92,5 @@ func get(k string) string {
 	if err != nil {
 		return ""
 	}
-	return v
+	return
 }
