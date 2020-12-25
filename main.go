@@ -11,12 +11,12 @@ var db *badger.DB
 
 func main() {
 	opts := badger.DefaultOptions("/tmp/badger")
-	b, err := badger.Open(opts)
+	bg, err := badger.Open(opts)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer b.Close()
-	db = b
+	defer bg.Close()
+	db = bg
 
 	fmt.Println("Badger started")
 
@@ -48,15 +48,11 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 func Get(k string) string {
 	fmt.Println("Do get key=" + k)
 
-	//TODO
-
 	return get(k)
 }
 
 func Set(k, v string) error {
 	fmt.Println("Do set key=" + k + ", value=" + v)
-
-	//TODO
 
 	return set(k, v)
 }
@@ -85,7 +81,6 @@ func get(k string) string {
 			return err
 		}
 		v = string(val)
-		fmt.Printf("The answer is: %s\n", val)
 		return nil
 	})
 
