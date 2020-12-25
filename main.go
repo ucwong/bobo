@@ -6,21 +6,42 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/", HelloHandler)
+	http.HandleFunc("/", Handler)
 
-	http.HandleFunc("/get", GetHandler)
-	http.HandleFunc("/set", SetHandler)
 	http.ListenAndServe(":8080", nil)
 }
 
-func HelloHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello, %s!", r.URL.Path[1:])
+func Handler(w http.ResponseWriter, r *http.Request) {
+	method := r.URL.Path[1:]
+	q := r.URL.Query()
+
+	var res string
+	switch method {
+	case "get":
+		res = Get(q.Get("k"))
+	case "set":
+		Set(q.Get("k"), q.Get("v"))
+	default:
+		Default()
+	}
+
+	fmt.Fprintf(w, res)
 }
 
-func GetHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Get invoke, %s!", r.URL.Path[1:])
+func Get(k string) string {
+	fmt.Println("Do get key=" + k)
+
+	//TODO
+
+	return "Get some value with key=" + k
 }
 
-func SetHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Set invoke %s!", r.URL.Path[1:])
+func Set(k, v string) {
+	fmt.Println("Do set key=" + k + ", value=" + v)
+
+	//TODO
+}
+
+func Default() {
+	//fmt.Println("Do nothing")
 }
