@@ -1,7 +1,9 @@
 # bobo
 ## Simplest webserver but available
 
-To implement all the needed funcs of a webserver production with the simplest ways
+### To implement all the needed funcs of a webserver production with the simplest ways
+
+#### Get, Set and Persistence
 
 ```
 go run main.go
