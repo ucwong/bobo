@@ -2,7 +2,7 @@
 
 ## Simplest webserver (less than 100 lines coding) but available
 
-To implement all the funcs of a webserver production with the simplest ways, you can change the parts as needed. The orignal only has ```main.go``` for simple, it is ok to split it as needed
+To implement all the funcs of a webserver production with the simplest ways, you can change the parts as needed. The orignal only has ```bobo.go``` for simple, it is ok to split it as needed
 
 ### (Feel free to fork it and add advanced logics and features)
 
