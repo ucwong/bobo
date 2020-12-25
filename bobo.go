@@ -63,7 +63,7 @@ func Default() string {
 
 func set(k, v string) (err error) {
 	if len(k) == 0 || len(v) == 0 {
-		return nil
+		return
 	}
 	err = db.Update(func(txn *badger.Txn) error {
 		return txn.Set([]byte(k), []byte(v))
@@ -73,7 +73,7 @@ func set(k, v string) (err error) {
 
 func get(k string) (v string) {
 	if len(k) == 0 {
-		return ""
+		return
 	}
 
 	db.View(func(txn *badger.Txn) error {
