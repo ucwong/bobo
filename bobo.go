@@ -43,16 +43,6 @@ func Set(k, v string) error {
 	return set(k, v)
 }
 
-func set(k, v string) (err error) {
-	if len(k) == 0 || len(v) == 0 {
-		return
-	}
-	err = db.Update(func(txn *badger.Txn) error {
-		return txn.Set([]byte(k), []byte(v))
-	})
-	return
-}
-
 func get(k string) (v string) {
 	if len(k) == 0 {
 		return
@@ -64,6 +54,16 @@ func get(k string) (v string) {
 			}
 		}
 		return nil
+	})
+	return
+}
+
+func set(k, v string) (err error) {
+	if len(k) == 0 || len(v) == 0 {
+		return
+	}
+	err = db.Update(func(txn *badger.Txn) error {
+		return txn.Set([]byte(k), []byte(v))
 	})
 	return
 }
