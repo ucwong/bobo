@@ -35,7 +35,6 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	default:
 		res = Default()
 	}
-
 	fmt.Fprintf(w, res)
 }
 
@@ -76,6 +75,5 @@ func get(k string) (v string) {
 		}
 		return nil
 	})
-
 	return
 }
