@@ -4,7 +4,7 @@
 
 Implement the basic features of a web backend with the simplest ways. The orignal only has ```bobo.go``` for simple, it is ok to changed or split it as needed
 
-### Feel free to fork it and add advanced logics and features
+Feel free to fork it and add advanced logics and features
 
 ## How to run it ?
 ```
