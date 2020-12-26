@@ -1,6 +1,6 @@
 # Bobo
 
-## Simplest web server (less than 80 lines coding) but available
+## Simplest web server (less than 70 lines coding of Golang) but available
 
 Implement the basic features of a web backend with the simplest ways. The orignal only has ```bobo.go``` for simple, it is ok to changed or split it as needed
 
