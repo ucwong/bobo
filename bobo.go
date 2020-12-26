@@ -19,7 +19,7 @@ func main() {
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	mt.Printf("%v\n", r.URL)
+	fmt.Printf("%v\n", r.URL)
 	q := r.URL.Query()
 	res := "OK"
 	switch r.URL.Path[1:] {
