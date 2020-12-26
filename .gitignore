@@ -2,3 +2,4 @@ main
 badger
 bobo
 .badger
+*.log

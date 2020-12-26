@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	badger "github.com/dgraph-io/badger/v2"
@@ -11,17 +10,13 @@ import (
 var db *badger.DB
 
 func main() {
-	bg, err := badger.Open(badger.DefaultOptions(".badger"))
-	if err != nil {
-		log.Fatal(err)
+	if bg, err := badger.Open(badger.DefaultOptions(".badger")); err == nil {
+		defer bg.Close()
+		db = bg
+
+		http.HandleFunc("/", Handler)
+		http.ListenAndServe(":8080", nil)
 	}
-	defer bg.Close()
-	db = bg
-
-	fmt.Println("Badger started")
-
-	http.HandleFunc("/", Handler)
-	http.ListenAndServe(":8080", nil)
 }
 
 func Handler(w http.ResponseWriter, r *http.Request) {
