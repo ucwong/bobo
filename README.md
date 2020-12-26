@@ -34,7 +34,6 @@ curl http://localhost:8080/set?k=1\&v=2
 Set invoke, set!
 
 ## How to test it ?
-time ./bench.sh
 ```
 time ./bench.sh
 
