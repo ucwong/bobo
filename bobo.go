@@ -13,18 +13,16 @@ func main() {
 	if bg, err := badger.Open(badger.DefaultOptions(".badger")); err == nil {
 		defer bg.Close()
 		db = bg
-
 		http.HandleFunc("/", handler)
 		http.ListenAndServe(":8080", nil)
 	}
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	method := r.URL.Path[1:]
+	mt.Printf("%v\n", r.URL)
 	q := r.URL.Query()
-
-	var res = "OK"
-	switch method {
+	res := "OK"
+	switch r.URL.Path[1:] {
 	case "get":
 		res = Get(q.Get("k"))
 	case "set":
@@ -38,12 +36,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func Get(k string) string {
-	fmt.Println("Do get [k=" + k + "]")
 	return get(k)
 }
 
 func Set(k, v string) error {
-	fmt.Println("Do set [k=" + k + ",v=" + v + "]")
 	return set(k, v)
 }
 
