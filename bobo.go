@@ -33,7 +33,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			res = "ERROR" //fmt.Sprintf("%v", err)
 		}
 	default:
-		res = Default()
+		res = "method not found"
 	}
 	fmt.Fprintf(w, res)
 }
@@ -46,10 +46,6 @@ func Get(k string) string {
 func Set(k, v string) error {
 	fmt.Println("Do set [k=" + k + ",v=" + v + "]")
 	return set(k, v)
-}
-
-func Default() string {
-	return "method not found"
 }
 
 func set(k, v string) (err error) {
