@@ -23,14 +23,14 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	method := r.URL.Path[1:]
 	q := r.URL.Query()
 
-	var res = "suc"
+	var res = "OK"
 	switch method {
 	case "get":
 		res = Get(q.Get("k"))
 	case "set":
 		err := Set(q.Get("k"), q.Get("v"))
 		if err != nil {
-			res = "failed"
+			res = "ERR" //fmt.Sprintf("%v", err)
 		}
 	default:
 		res = Default()
@@ -66,7 +66,6 @@ func get(k string) (v string) {
 	if len(k) == 0 {
 		return
 	}
-
 	db.View(func(txn *badger.Txn) error {
 		if item, err := txn.Get([]byte(k)); err == nil {
 			if val, err := item.ValueCopy(nil); err == nil {
