@@ -11,7 +11,7 @@ import (
 var db *badger.DB
 
 func main() {
-	bg, err := badger.Open(badger.DefaultOptions("badger"))
+	bg, err := badger.Open(badger.DefaultOptions(".badger"))
 	if err != nil {
 		log.Fatal(err)
 	}
