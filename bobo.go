@@ -28,8 +28,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	case "get":
 		res = Get(q.Get("k"))
 	case "set":
-		err := Set(q.Get("k"), q.Get("v"))
-		if err != nil {
+		if err := Set(q.Get("k"), q.Get("v")); err != nil {
 			res = "ERROR" //fmt.Sprintf("%v", err)
 		}
 	default:
