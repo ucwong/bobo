@@ -14,12 +14,12 @@ func main() {
 		defer bg.Close()
 		db = bg
 
-		http.HandleFunc("/", Handler)
+		http.HandleFunc("/", handler)
 		http.ListenAndServe(":8080", nil)
 	}
 }
 
-func Handler(w http.ResponseWriter, r *http.Request) {
+func handler(w http.ResponseWriter, r *http.Request) {
 	method := r.URL.Path[1:]
 	q := r.URL.Query()
 
