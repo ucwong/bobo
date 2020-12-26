@@ -21,7 +21,6 @@ func main() {
 	fmt.Println("Badger started")
 
 	http.HandleFunc("/", Handler)
-
 	http.ListenAndServe(":8080", nil)
 }
 
@@ -47,13 +46,11 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 func Get(k string) string {
 	fmt.Println("Do get, k=" + k)
-
 	return get(k)
 }
 
 func Set(k, v string) error {
 	fmt.Println("Do set, k=" + k + ", v=" + v)
-
 	return set(k, v)
 }
 
@@ -77,15 +74,11 @@ func get(k string) (v string) {
 	}
 
 	db.View(func(txn *badger.Txn) error {
-		item, err := txn.Get([]byte(k))
-		if err != nil {
-			return err
+		if item, err := txn.Get([]byte(k)); err == nil {
+			if val, err := item.ValueCopy(nil); err == nil {
+				v = string(val)
+			}
 		}
-		val, err := item.ValueCopy(nil)
-		if err != nil {
-			return err
-		}
-		v = string(val)
 		return nil
 	})
 
