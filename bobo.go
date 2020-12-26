@@ -40,12 +40,12 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func Get(k string) string {
-	fmt.Println("Do get, k=" + k)
+	fmt.Println("Do get [k=" + k + "]")
 	return get(k)
 }
 
 func Set(k, v string) error {
-	fmt.Println("Do set, k=" + k + ", v=" + v)
+	fmt.Println("Do set [k=" + k + ",v=" + v + "]")
 	return set(k, v)
 }
 
