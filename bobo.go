@@ -30,7 +30,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	case "set":
 		err := Set(q.Get("k"), q.Get("v"))
 		if err != nil {
-			res = "ERR" //fmt.Sprintf("%v", err)
+			res = "ERROR" //fmt.Sprintf("%v", err)
 		}
 	default:
 		res = Default()
