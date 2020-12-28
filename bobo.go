@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	badger "github.com/dgraph-io/badger/v2"
@@ -19,15 +20,18 @@ func main() {
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("%v\n", r.URL)
+	fmt.Printf("%v, %v\n", r.URL, r.Method)
 	q := r.URL.Query()
 	res := "OK"
-	switch r.URL.Path[1:] {
-	case "get":
-		res = Get(q.Get("k"))
-	case "set":
-		if err := Set(q.Get("k"), q.Get("v")); err != nil {
-			res = "ERROR" //fmt.Sprintf("%v", err)
+	uri := r.URL.Path[1:]
+	switch r.Method {
+	case "GET":
+		res = Get(uri + "_" + q.Get("k"))
+	case "POST":
+		if reqBody, err := ioutil.ReadAll(r.Body); err == nil {
+			if err := Set(uri+"_"+q.Get("k"), string(reqBody)); err != nil {
+				res = "ERROR" //fmt.Sprintf("%v", err)
+			}
 		}
 	default:
 		res = "method not found"
