@@ -16,24 +16,6 @@ go build bobo.go
 ./bobo
 ```
 ## How to use it ?
-http://localhost:8080/get?k=1
-
-or
-```
-curl http://localhost:8080/get?k=1
-```
-Get some value with key=1
-
-http://localhost:8080/set?k=1&v=2
-
-or 
-```
-curl http://localhost:8080/set?k=1\&v=2
-```
-
-Set invoke, set!
-
-## How to test it ?
 ```
 time ./bench.sh
 
