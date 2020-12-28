@@ -20,9 +20,9 @@ func main() {
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("%v, %v\n", r.URL, r.Method)
+	fmt.Printf("%v, %v, %v\n", r.URL, r.Method, r.URL.Path)
 	res := "OK"
-	uri := r.URL.Path[1:]
+	uri := r.URL.Path
 	switch r.Method {
 	case "GET":
 		res = Get(uri)
