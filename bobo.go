@@ -21,15 +21,14 @@ func main() {
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("%v, %v\n", r.URL, r.Method)
-	q := r.URL.Query()
 	res := "OK"
 	uri := r.URL.Path[1:]
 	switch r.Method {
 	case "GET":
-		res = Get(uri + "_" + q.Get("k"))
+		res = Get(uri)
 	case "POST":
 		if reqBody, err := ioutil.ReadAll(r.Body); err == nil {
-			if err := Set(uri+"_"+q.Get("k"), string(reqBody)); err != nil {
+			if err := Set(uri, string(reqBody)); err != nil {
 				res = "ERROR" //fmt.Sprintf("%v", err)
 			}
 		}
