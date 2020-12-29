@@ -44,7 +44,7 @@ POST
 ##### Params
 ```
 msg: Plain message
-sig: the signatue of msg above
+sig: the signature of msg above
 ```
 
 ##### DATA
