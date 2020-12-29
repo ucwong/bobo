@@ -29,9 +29,10 @@ sys	0m3.074s
 #### Storage
 https://github.com/dgraph-io/badger
 
-#### User
-1. register
-
+## Customized
+### User
+#### Register
+To register user information in json format
 ##### Method
 ```
 POST
@@ -49,4 +50,24 @@ sig: the signatue of msg above
 ##### DATA
 ```
 {...}
+```
+
+#### Find
+To find user information by address (0xabcd)
+##### Method
+```
+GET
+```
+##### URL
+```
+/user/0x2a2a0667f9cbf4055e48eaf0d5b40304b8822184
+```
+##### Params
+```
+NULL
+```
+
+##### DATA
+```
+NULL
 ```
