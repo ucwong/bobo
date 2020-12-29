@@ -40,7 +40,7 @@ func main() {
 		defer bg.Close()
 		db = bg
 		http.HandleFunc("/", handler)
-		http.ListenAndServe(":8080", nil)
+		http.ListenAndServe("127.0.0.1:8080", nil)
 	}
 }
 
@@ -71,24 +71,13 @@ func Get(k string) string {
 	return get(k)
 }
 
-var (
-//msg = hexutil.MustDecode("0xce0677bb30baa8cf067c88db9811f4333d131bf8bcf12fe7065d211dce971008")
-//testsig    = hexutil.MustDecode("0x90f27b8b488db00b00606796d2987f6a5f59ae62ea05effe84fef5b8b0e549984a691139ad57a3f0b906637673aa2f63d1f55cb1a69199d4009eea23ceaddc9301")
-//testpubkey = hexutil.MustDecode("0x04e32df42865e97135acfb65f3bae71bdc86f4d49150ad6a440b6f15878109880a0a2b2667f7e725ceea70c673093bf67663e0312623c8e091b13cf2c0f11ef652")
-)
-
 func Set(k, v, addr, msg, sig string) error {
-
-	//m := hexutil.MustDecode(msg)
 	m := Keccak256([]byte(msg))
-	//p := hexutil.MustDecode(pub)
 	s := hexutil.MustDecode(sig)
 
 	if len(m) == 0 || len(s) == 0 {
 		return errors.New("Hex decode failed")
 	}
-
-	//	fmt.Println(hexutil.Encode(m[:]))
 
 	recoveredPub, err := Ecrecover(m, s)
 	if err != nil {
@@ -108,11 +97,6 @@ func Set(k, v, addr, msg, sig string) error {
 	}
 
 	fmt.Println("signature passed")
-
-	//ss , _ := SignHex("Hello", "289c2857d4598e37fb9647507e47a309d6133539bf21a8b9cb6df88fd5232032")
-	// sig 0xee78eaa27526b412d0e970b85f47c96aa0aa67ed1c06f577ffe712a91284659a0a38529194a53891c84919369e09bf7e08d1655544cb044671461e210ddad1eb00
-	// pub
-	//fmt.Println(hexutil.Encode(ss[:]))
 	return set(k, v)
 }
 
@@ -217,8 +201,6 @@ func zeroBytes(bytes []byte) {
 	}
 }
 
-//pri := "289c2857d4598e37fb9647507e47a309d6133539bf21a8b9cb6df88fd5232032"
-//msg := "Hello"
 func SignHex(msg, pri string) (sig []byte, err error) {
 	k0, _ := HexToECDSA(pri)
 	msg0 := Keccak256([]byte(msg))
