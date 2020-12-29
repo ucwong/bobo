@@ -43,7 +43,7 @@ POST
 ```
 ##### Params
 ```
-sig: the signature of user info in DATA below
+sig: the signature of user info in DATA below {...}
 ```
 
 ##### DATA
