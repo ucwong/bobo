@@ -28,3 +28,25 @@ sys	0m3.074s
 
 #### Storage
 https://github.com/dgraph-io/badger
+
+#### User
+1. register
+
+##### Method
+```
+POST
+```
+##### URL
+```
+/user/0x2a2a0667f9cbf4055e48eaf0d5b40304b8822184?msg=aHellox&sig=0xee78eaa27526b412d0e970b85f47c96aa0aa67ed1c06f577ffe712a91284659a0a38529194a53891c84919369e09bf7e08d1655544cb044671461e210ddad1eb00
+```
+##### Params
+```
+msg: Plain message
+sig: the signatue of msg above
+```
+
+##### DATA
+```
+{...}
+```
