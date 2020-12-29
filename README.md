@@ -31,7 +31,7 @@ https://github.com/dgraph-io/badger
 
 ## Customized
 ## User
-### Register
+### 1. Register
 To register user information in json format
 ##### Method
 ```
@@ -52,7 +52,7 @@ sig: the signatue of msg above
 {...}
 ```
 
-### Find
+### 2. Find
 To find user information by address (0xabcd)
 ##### Method
 ```
