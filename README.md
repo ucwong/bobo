@@ -72,4 +72,4 @@ NULL
 NULL
 ```
 
-test domain http://share:cortexlabs.ai:8081
+test domain http://share.cortexlabs.ai:8081
