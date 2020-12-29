@@ -53,7 +53,7 @@ sig: the signature of msg above
 ```
 
 ### 2. Details
-To find user information by address (0xabcd)
+To find user information by address (```0x2a2a0667f9cbf4055e48eaf0d5b40304b8822184```)
 ##### Method
 ```
 GET
