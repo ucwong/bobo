@@ -56,7 +56,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		if reqBody, err := ioutil.ReadAll(r.Body); err == nil {
 			u := strings.Split(uri, "/")
 			if len(u) >= 0 {
-				if err := Set(uri, string(reqBody), u[len(u)-1], q.Get("msg"), q.Get("sig")); err != nil {
+				if err := Set(uri, string(reqBody), u[len(u)-1], q.Get("sig")); err != nil {
 					res = "ERROR" //fmt.Sprintf("%v", err)
 				}
 			}
@@ -71,8 +71,8 @@ func Get(k string) string {
 	return get(k)
 }
 
-func Set(k, v, addr, msg, sig string) error {
-	m := Keccak256([]byte(msg))
+func Set(k, v, addr, sig string) error {
+	m := Keccak256([]byte(v))
 	s := hexutil.MustDecode(sig)
 
 	if len(m) == 0 || len(s) == 0 {
