@@ -145,13 +145,6 @@ func EcRecover(data, sig hexutil.Bytes) (common.Address, error) {
 	return crypto.PubkeyToAddress(*rpk), nil
 }
 
-// SignHash is a helper function that calculates a hash for the given message that can be
-// safely used to calculate a signature from.
-//
-// The hash is calculated as
-//   keccak256("\x19Cortex Signed Message:\n"${message length}${message}).
-//
-// This gives context to the signed message and prevents signing of transactions.
 func SignHash(data []byte) ([]byte, string) {
 	msg := fmt.Sprintf("\x19Cortex Signed Message:\n%d%s", len(data), data)
 	return crypto.Keccak256([]byte(msg)), msg
@@ -208,14 +201,6 @@ func SignHex(msg, pri string) (sig []byte, err error) {
 	return Sign(msg0, k0)
 }
 
-// Sign calculates an ECDSA signature.
-//
-// This function is susceptible to chosen plaintext attacks that can leak
-// information about the private key that is used for signing. Callers must
-// be aware that the given hash cannot be chosen by an adversery. Common
-// solution is to hash any input before calculating the signature.
-//
-// The produced signature is in the [R || S || V] format where V is 0 or 1.
 func Sign(hash []byte, prv *ecdsa.PrivateKey) (sig []byte, err error) {
 	if len(hash) != DigestLength {
 		return nil, fmt.Errorf("hash is required to be exactly 32 bytes (%d)", len(hash))
@@ -225,7 +210,6 @@ func Sign(hash []byte, prv *ecdsa.PrivateKey) (sig []byte, err error) {
 	return secp256k1.Sign(hash, seckey)
 }
 
-// HexToECDSA parses a secp256k1 private key.
 func HexToECDSA(hexkey string) (*ecdsa.PrivateKey, error) {
 	b, err := hex.DecodeString(hexkey)
 	if byteErr, ok := err.(hex.InvalidByteError); ok {
@@ -236,14 +220,10 @@ func HexToECDSA(hexkey string) (*ecdsa.PrivateKey, error) {
 	return ToECDSA(b)
 }
 
-// ToECDSA creates a private key with the given D value.
 func ToECDSA(d []byte) (*ecdsa.PrivateKey, error) {
 	return toECDSA(d, true)
 }
 
-// toECDSA creates a private key with the given D value. The strict parameter
-// controls whether the key's length should be enforced at the curve size or
-// it can also accept legacy encodings (0 prefixes).
 func toECDSA(d []byte, strict bool) (*ecdsa.PrivateKey, error) {
 	priv := new(ecdsa.PrivateKey)
 	priv.PublicKey.Curve = S256()
