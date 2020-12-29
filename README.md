@@ -71,3 +71,5 @@ NULL
 ```
 NULL
 ```
+
+test domain http://share:cortexlabs.ai:8080/
