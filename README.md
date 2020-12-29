@@ -52,7 +52,7 @@ sig: the signature of msg above
 {...}
 ```
 
-### 2. Find
+### 2. Details
 To find user information by address (0xabcd)
 ##### Method
 ```
