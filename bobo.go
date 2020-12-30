@@ -12,6 +12,7 @@ import (
 	"math/big"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/CortexFoundation/CortexTheseus/common"
 	"github.com/CortexFoundation/CortexTheseus/common/hexutil"
@@ -29,12 +30,20 @@ type KeccakState interface {
 	Read([]byte) (int, error)
 }
 
+type Body struct {
+	Timestamp int64  `json:"ts"`
+	Addr      string `json:"addr"`
+}
+
 var (
 	db            *badger.DB
 	secp256k1N, _ = new(big.Int).SetString("fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141", 16)
+	testpri       = "289c2857d4598e37fb9647507e47a309d6133539bf21a8b9cb6df88fd5232032"
 )
 
 const DigestLength = 32
+const FV = "_fv_"
+const FL = "_fl_"
 
 func main() {
 	if bg, err := badger.Open(badger.DefaultOptions(".badger")); err == nil {
@@ -48,7 +57,7 @@ func main() {
 func handler(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("%v, %v, %v\n", r.URL, r.Method, r.URL.Path)
 	res := "OK"
-	uri := r.URL.Path
+	uri := strings.ToLower(r.URL.Path)
 	q := r.URL.Query()
 	switch r.Method {
 	case "GET":
@@ -61,6 +70,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 				res = Get(uri)
 			case "favor":
 				res = Prefix(uri)
+			case "follower":
+				//TODO
 			case "follow":
 				//TODO
 			default:
@@ -68,22 +79,42 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		}
 	case "POST":
 		if reqBody, err := ioutil.ReadAll(r.Body); err == nil {
+			var body Body
+			if err := json.Unmarshal(reqBody, &body); err != nil {
+				fmt.Println("Not a json:", err)
+				//return err
+			}
+
+			to := strings.ToLower(body.Addr)
+			timestamp := body.Timestamp
+
+			if time.Now().Unix()-int64(30) > timestamp {
+				//return errors.New("Signature expired")
+			}
+
+			if time.Now().Unix()+int64(15) < timestamp {
+				//return errors.New("Signature disallowed future")
+			}
+			//TODO to address fmt check
 			u := strings.Split(uri, "/")
 			if len(u) > 1 {
 				method := u[len(u)-2]
 				addr := u[len(u)-1]
 
-				fmt.Println("method:" + method + ", addr:" + addr)
+				//fmt.Println("method:" + method + ", addr:" + addr)
 				switch method {
 				case "user":
 					if err := Set(uri, string(reqBody), addr, q.Get("sig")); err != nil {
-						res = "ERROR" //fmt.Sprintf("%v", err)
+						res = fmt.Sprintf("%v", err)
 					}
 				case "favor":
-					if err := Set(uri+"_"+string(reqBody), string(reqBody), addr, q.Get("sig")); err != nil {
+					if err := Set(uri+FV+to, to, addr, q.Get("sig")); err != nil {
 						res = "ERROR" //fmt.Sprintf("%v", err)
 					}
 				case "follow":
+					if err := Set(uri+FL+to, to, addr, q.Get("sig")); err != nil {
+						res = "ERROR" //fmt.Sprintf("%v", err)
+					}
 					//TODO
 				default:
 					res = "Method not found"
@@ -91,7 +122,42 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	case "DELETE":
-		//TODO
+		if reqBody, err := ioutil.ReadAll(r.Body); err == nil {
+			var body Body
+			if err := json.Unmarshal(reqBody, &body); err != nil {
+				fmt.Println("Not a json:", err)
+				//return err
+			}
+			to := strings.ToLower(body.Addr)
+			timestamp := body.Timestamp
+
+			if time.Now().Unix()-int64(30) > timestamp {
+				//return errors.New("Signature expired")
+			}
+
+			if time.Now().Unix()+int64(15) < timestamp {
+				//return errors.New("Signature disallowed future")
+			}
+			u := strings.Split(uri, "/")
+			if len(u) > 1 {
+				method := u[len(u)-2]
+				addr := u[len(u)-1]
+
+				fmt.Println("method:" + method + ", addr:" + addr)
+				switch method {
+				case "favor":
+					if err := Del(uri+FV+to, string(reqBody), addr, q.Get("sig")); err != nil {
+						res = "ERROR" //fmt.Sprintf("%v", err)
+					}
+				case "follow":
+					if err := Del(uri+FL+to, string(reqBody), addr, q.Get("sig")); err != nil {
+						res = "ERROR" //fmt.Sprintf("%v", err)
+					}
+				default:
+					res = "Method not found"
+				}
+			}
+		}
 	default:
 		res = "Method not found"
 	}
@@ -103,6 +169,10 @@ func Get(k string) string {
 }
 
 func Set(k, v, addr, sig string) error {
+	//fmt.Printf("%v\n", []byte(v))
+	sig_, _ := SignHex(v, testpri)
+	fmt.Printf("signature %s\n", hexutil.Encode(sig_[:]))
+
 	m := Keccak256([]byte(v))
 	s := hexutil.MustDecode(sig)
 
@@ -131,20 +201,31 @@ func Set(k, v, addr, sig string) error {
 	return set(k, v)
 }
 
+func Del(k, v, addr, sig string) error {
+	//TODO sig check including ecdsa and ts
+	return del(k)
+}
+
 func Prefix(k string) string {
 	res, _ := json.Marshal(prefix(k))
 	return string(res)
 }
 
-func get(k string) (v string) {
+func get(k string) (val string) {
 	if len(k) == 0 {
 		return
 	}
 	db.View(func(txn *badger.Txn) error {
 		if item, err := txn.Get([]byte(k)); err == nil {
-			if val, err := item.ValueCopy(nil); err == nil {
-				v = string(val)
-			}
+			//if val, err := item.ValueCopy(nil); err == nil {
+			//	v = string(val)
+			//}
+
+			item.Value(func(v []byte) error {
+				//	fmt.Printf("key=%s, value=%s\n", k, v)
+				val = string(v)
+				return nil
+			})
 		}
 		return nil
 	})
@@ -161,6 +242,16 @@ func set(k, v string) (err error) {
 	return
 }
 
+func del(k string) (err error) {
+	if len(k) == 0 {
+		return
+	}
+	err = db.Update(func(txn *badger.Txn) error {
+		return txn.Delete([]byte(k))
+	})
+	return
+}
+
 // k="/favor/0x2a2a0667f9cbf4055e48eaf0d5b40304b8822184"
 func prefix(k string) (res []string) {
 	db.View(func(txn *badger.Txn) error {
@@ -170,15 +261,15 @@ func prefix(k string) (res []string) {
 		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
 			item := it.Item()
 			//k := item.Key()
-			//err := item.Value(func(v []byte) error {
-			//	fmt.Printf("key=%s, value=%s\n", k, v)
-			//	return nil
-			//})
-			if val, err := item.ValueCopy(nil); err == nil {
-				res = append(res, string(val))
-			}
+			item.Value(func(v []byte) error {
+				//fmt.Printf("key=%s, value=%s\n", k, v)
+				res = append(res, string(v))
+				return nil
+			})
+			//if val, err := item.ValueCopy(nil); err == nil {
+			//	res = append(res, string(val))
+			//}
 
-			return nil
 		}
 		return nil
 	})
@@ -186,6 +277,47 @@ func prefix(k string) (res []string) {
 	return
 }
 
+func scan() (res []string) {
+	db.View(func(txn *badger.Txn) error {
+		opts := badger.DefaultIteratorOptions
+		opts.PrefetchSize = 10
+		it := txn.NewIterator(opts)
+		defer it.Close()
+		for it.Rewind(); it.Valid(); it.Next() {
+			item := it.Item()
+			k := item.Key()
+			err := item.Value(func(v []byte) error {
+				fmt.Printf("key=%s, value=%s\n", k, v)
+				res = append(res, string(v))
+				return nil
+			})
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	return
+}
+
+func suffix(suf string) (res []string) {
+	db.View(func(txn *badger.Txn) error {
+		opts := badger.DefaultIteratorOptions
+		opts.PrefetchValues = false
+		it := txn.NewIterator(opts)
+		defer it.Close()
+		for it.Rewind(); it.Valid(); it.Next() {
+			item := it.Item()
+			k := item.Key()
+			fmt.Printf("key=%s\n", k)
+			if strings.HasSuffix(string(k), suf) {
+				res = append(res, string(k))
+			}
+		}
+		return nil
+	})
+	return
+}
 func VerifySignature(pubkey, hash, signature []byte) bool {
 	return secp256k1.VerifySignature(pubkey, hash, signature)
 }
@@ -255,10 +387,10 @@ func zeroBytes(bytes []byte) {
 	}
 }
 
-func SignHex(msg, pri string) (sig []byte, err error) {
+func SignHex(msg string, pri string) (sig []byte, err error) {
 	k0, _ := HexToECDSA(pri)
 	msg0 := Keccak256([]byte(msg))
-	fmt.Println("msg0 " + hexutil.Encode(msg0[:]))
+	//fmt.Println("msg0 " + hexutil.Encode(msg0[:]))
 	return Sign(msg0, k0)
 }
 
