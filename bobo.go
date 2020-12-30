@@ -4,6 +4,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"hash"
@@ -51,16 +52,46 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	switch r.Method {
 	case "GET":
-		res = Get(uri)
+		u := strings.Split(uri, "/")
+		if len(u) > 1 {
+			method := u[len(u)-2]
+			//addr := u[len(u)-1]
+			switch method {
+			case "user":
+				res = Get(uri)
+			case "favor":
+				res = Prefix(uri)
+			case "follow":
+				//TODO
+			default:
+			}
+		}
 	case "POST":
 		if reqBody, err := ioutil.ReadAll(r.Body); err == nil {
 			u := strings.Split(uri, "/")
-			if len(u) >= 0 {
-				if err := Set(uri, string(reqBody), u[len(u)-1], q.Get("sig")); err != nil {
-					res = "ERROR" //fmt.Sprintf("%v", err)
+			if len(u) > 1 {
+				method := u[len(u)-2]
+				addr := u[len(u)-1]
+
+				fmt.Println("method:" + method + ", addr:" + addr)
+				switch method {
+				case "user":
+					if err := Set(uri, string(reqBody), addr, q.Get("sig")); err != nil {
+						res = "ERROR" //fmt.Sprintf("%v", err)
+					}
+				case "favor":
+					if err := Set(uri+"_"+string(reqBody), string(reqBody), addr, q.Get("sig")); err != nil {
+						res = "ERROR" //fmt.Sprintf("%v", err)
+					}
+				case "follow":
+					//TODO
+				default:
+					res = "Method not found"
 				}
 			}
 		}
+	case "DELETE":
+		//TODO
 	default:
 		res = "Method not found"
 	}
@@ -100,6 +131,11 @@ func Set(k, v, addr, sig string) error {
 	return set(k, v)
 }
 
+func Prefix(k string) string {
+	res, _ := json.Marshal(prefix(k))
+	return string(res)
+}
+
 func get(k string) (v string) {
 	if len(k) == 0 {
 		return
@@ -122,6 +158,31 @@ func set(k, v string) (err error) {
 	err = db.Update(func(txn *badger.Txn) error {
 		return txn.Set([]byte(k), []byte(v))
 	})
+	return
+}
+
+// k="/favor/0x2a2a0667f9cbf4055e48eaf0d5b40304b8822184"
+func prefix(k string) (res []string) {
+	db.View(func(txn *badger.Txn) error {
+		it := txn.NewIterator(badger.DefaultIteratorOptions)
+		defer it.Close()
+		prefix := []byte(k)
+		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
+			item := it.Item()
+			//k := item.Key()
+			//err := item.Value(func(v []byte) error {
+			//	fmt.Printf("key=%s, value=%s\n", k, v)
+			//	return nil
+			//})
+			if val, err := item.ValueCopy(nil); err == nil {
+				res = append(res, string(val))
+			}
+
+			return nil
+		}
+		return nil
+	})
+
 	return
 }
 
