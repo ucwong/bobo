@@ -3,3 +3,4 @@ badger
 bobo
 .badger
 *.log
+*.log.*
