@@ -67,7 +67,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			//addr := u[len(u)-1]
 			switch method {
 			case "user":
-				res = Get(uri)
+				res = UserDetails(uri)
 			case "favor":
 				res = Favor(uri)
 			case "favored":
@@ -177,7 +177,7 @@ func parseUri(uri string) (string, string) {
 	return method, addr
 }
 
-func Get(k string) string {
+func UserDetails(k string) string {
 	return get(k)
 }
 
