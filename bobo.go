@@ -96,7 +96,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 				//return errors.New("Signature expired")
 			}
 
-			if time.Now().Unix()+int64(15) < timestamp {
+			if time.Now().Unix()+int64(30) < timestamp {
 				//return errors.New("Signature disallowed future")
 			}
 			//TODO to address fmt check
