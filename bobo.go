@@ -69,14 +69,15 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			case "user":
 				res = Get(uri)
 			case "favor":
-				res = Prefix(uri)
+				res = Favor(uri)
 			case "favored":
 				addr := u[len(u)-1]
 				res = Favored(FV + addr)
 			case "follow":
-				//TODO
+				res = Follow(uri)
 			case "followed":
-				//TODO
+				addr := u[len(u)-1]
+				res = Followed(FL + addr)
 			default:
 			}
 		}
@@ -218,7 +219,12 @@ func Del(k, v, addr, sig string) error {
 	return del(k)
 }
 
-func Prefix(k string) string {
+func Favor(k string) string {
+	res, _ := json.Marshal(prefix(k))
+	return string(res)
+}
+
+func Follow(k string) string {
 	res, _ := json.Marshal(prefix(k))
 	return string(res)
 }
