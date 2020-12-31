@@ -70,9 +70,12 @@ func handler(w http.ResponseWriter, r *http.Request) {
 				res = Get(uri)
 			case "favor":
 				res = Prefix(uri)
-			case "follower":
-				//TODO
+			case "favored":
+				addr := u[len(u)-1]
+				res = Favored(FV + addr)
 			case "follow":
+				//TODO
+			case "followed":
 				//TODO
 			default:
 			}
@@ -82,7 +85,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			var body Body
 			if err := json.Unmarshal(reqBody, &body); err != nil {
 				fmt.Println("Not a json:", err)
-				//return err
+				//return errors.New("Invalid json")
+				return
 			}
 
 			to := strings.ToLower(body.Addr)
@@ -126,7 +130,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			var body Body
 			if err := json.Unmarshal(reqBody, &body); err != nil {
 				fmt.Println("Not a json:", err)
-				//return err
+				//return errors.New("Invalid json")
+				return
 			}
 			to := strings.ToLower(body.Addr)
 			timestamp := body.Timestamp
@@ -162,6 +167,13 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		res = "Method not found"
 	}
 	fmt.Fprintf(w, res)
+}
+
+func parseUri(uri string) (string, string) {
+	u := strings.Split(uri, "/")
+	method := u[len(u)-2]
+	addr := u[len(u)-1]
+	return method, addr
 }
 
 func Get(k string) string {
@@ -208,6 +220,26 @@ func Del(k, v, addr, sig string) error {
 
 func Prefix(k string) string {
 	res, _ := json.Marshal(prefix(k))
+	return string(res)
+}
+
+func Followed(k string) string {
+	return ""
+}
+
+func Favored(k string) string {
+	fmt.Println(k)
+	favs := suffix(k)
+
+	var tmp []string
+	for _, f := range favs {
+		fmt.Println(f)
+		vs := strings.Split(string(f), FV)
+		fs := strings.Split(vs[0], "/")
+		tmp = append(tmp, fs[len(fs)-1])
+
+	}
+	res, _ := json.Marshal(tmp)
 	return string(res)
 }
 
@@ -285,9 +317,9 @@ func scan() (res []string) {
 		defer it.Close()
 		for it.Rewind(); it.Valid(); it.Next() {
 			item := it.Item()
-			k := item.Key()
+			//			k := item.Key()
 			err := item.Value(func(v []byte) error {
-				fmt.Printf("key=%s, value=%s\n", k, v)
+				//				fmt.Printf("key=%s, value=%s\n", k, v)
 				res = append(res, string(v))
 				return nil
 			})
@@ -309,8 +341,10 @@ func suffix(suf string) (res []string) {
 		for it.Rewind(); it.Valid(); it.Next() {
 			item := it.Item()
 			k := item.Key()
-			fmt.Printf("key=%s\n", k)
 			if strings.HasSuffix(string(k), suf) {
+				//vs := strings.Split(string(k), "_")
+				//favs := strings.Split(vs[0], "/")
+				//res = append(res, favs[len(favs)-1])
 				res = append(res, string(k))
 			}
 		}
