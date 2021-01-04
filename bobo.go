@@ -89,29 +89,29 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			if err := json.Unmarshal(reqBody, &body); err != nil {
 				log.Printf("%v", err)
 				//return errors.New("Invalid json")
-				return
+				res = "Invalid json"
+				break
 			}
 
 			to := strings.ToLower(body.Addr)
+			//if !common.IsHexAddress(to) {
+			//	res = "Invalid addr format"
+			//	break
+			//}
 			timestamp := body.Timestamp
 
-			if time.Now().Unix()-int64(30) > timestamp {
-				//return errors.New("Signature expired")
-			}
-
-			if time.Now().Unix()+int64(30) < timestamp {
-				//return errors.New("Signature disallowed future")
-			}
-
-			//TODO to address fmt check
 			u := strings.Split(uri, "/")
 			if len(u) > 1 {
 				method := u[len(u)-2]
 				addr := u[len(u)-1]
+				if !common.IsHexAddress(addr) {
+					res = "Invalid infohash format"
+					break
+				}
 
 				if !Verify(string(reqBody), addr, q.Get("sig"), timestamp) {
 					res = "Invalid signature"
-					return
+					break
 				}
 
 				//fmt.Println("method:" + method + ", addr:" + addr)
@@ -140,26 +140,29 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			if err := json.Unmarshal(reqBody, &body); err != nil {
 				log.Printf("%v", err)
 				//return errors.New("Invalid json")
-				return
+				res = "Invalid json"
+				break
 			}
 			to := strings.ToLower(body.Addr)
 			timestamp := body.Timestamp
 
-			//if time.Now().Unix()-int64(30) > timestamp {
-			//return errors.New("Signature expired")
+			//if !common.IsHexAddress(to) {
+			//	res = "Invalid addr format"
+			//	break
 			//}
 
-			//if time.Now().Unix()+int64(15) < timestamp {
-			//return errors.New("Signature disallowed future")
-			//}
 			u := strings.Split(uri, "/")
 			if len(u) > 1 {
 				method := u[len(u)-2]
 				addr := u[len(u)-1]
+				if !common.IsHexAddress(addr) {
+					res = "Invalid addr format"
+					break
+				}
 
 				if !Verify(string(reqBody), addr, q.Get("sig"), timestamp) {
 					res = "Invalid signature"
-					return
+					break
 
 				}
 
@@ -210,16 +213,10 @@ func UserDetails(k string) string {
 }
 
 func Set(k, v string) error {
-	//if !Verify(v, addr, sig, timestamp) {
-	//	return errors.New("Invalid signature")
-	//}
 	return set(k, v)
 }
 
 func Del(k string) error {
-	//if !Verify(v, addr, sig, timestamp) {
-	//        return errors.New("Invalid signature")
-	//}
 	return del(k)
 }
 
