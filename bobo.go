@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"hash"
 	"io/ioutil"
+	"log"
 	"math/big"
 	"net/http"
 	"strings"
@@ -19,6 +20,7 @@ import (
 	"github.com/CortexFoundation/CortexTheseus/common/math"
 	"github.com/CortexFoundation/CortexTheseus/crypto"
 	"github.com/CortexFoundation/CortexTheseus/crypto/secp256k1"
+	//"github.com/CortexFoundation/CortexTheseus/log"
 
 	"golang.org/x/crypto/sha3"
 
@@ -55,7 +57,7 @@ func main() {
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("%v, %v, %v\n", r.URL, r.Method, r.URL.Path)
+	log.Printf("%v %v", r.URL, r.Method)
 	res := "OK"
 	uri := strings.ToLower(r.URL.Path)
 	q := r.URL.Query()
@@ -85,7 +87,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		if reqBody, err := ioutil.ReadAll(r.Body); err == nil {
 			var body Body
 			if err := json.Unmarshal(reqBody, &body); err != nil {
-				fmt.Println("Not a json:", err)
+				log.Printf("%v", err)
 				//return errors.New("Invalid json")
 				return
 			}
@@ -130,7 +132,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		if reqBody, err := ioutil.ReadAll(r.Body); err == nil {
 			var body Body
 			if err := json.Unmarshal(reqBody, &body); err != nil {
-				fmt.Println("Not a json:", err)
+				log.Printf("%v", err)
 				//return errors.New("Invalid json")
 				return
 			}
@@ -149,7 +151,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 				method := u[len(u)-2]
 				addr := u[len(u)-1]
 
-				fmt.Println("method:" + method + ", addr:" + addr)
+				log.Printf("%v %v", method, addr)
 				switch method {
 				case "favor":
 					if err := Del(uri+FV+to, string(reqBody), addr, q.Get("sig")); err != nil {
@@ -184,7 +186,8 @@ func UserDetails(k string) string {
 func Set(k, v, addr, sig string) error {
 	//fmt.Printf("%v\n", []byte(v))
 	sig_, _ := SignHex(v, testpri)
-	fmt.Printf("signature %s\n", hexutil.Encode(sig_[:]))
+	//fmt.Printf("signature %s\n", hexutil.Encode(sig_[:]))
+	log.Printf("signature : %s", hexutil.Encode(sig_[:]))
 
 	m := Keccak256([]byte(v))
 	s := hexutil.MustDecode(sig)
@@ -201,16 +204,17 @@ func Set(k, v, addr, sig string) error {
 	pubKey, _ := UnmarshalPubkey(recoveredPub)
 	recoveredAddr := PubkeyToAddress(*pubKey)
 	if common.HexToAddress(addr) != recoveredAddr {
-		fmt.Printf("Address mismatch: want: %v have: %v\n", addr, recoveredAddr.Hex())
+		log.Printf("Address mismatch: want: %v have: %v\n", addr, recoveredAddr.Hex())
+
 		return errors.New("Key mismatched")
 	}
 
 	if !VerifySignature(recoveredPub, m, s[:len(s)-1]) {
-		fmt.Println("Signature unpassed")
+		//fmt.Println("Signature unpassed")
 		return errors.New("Signature failed")
 	}
 
-	fmt.Println("signature passed")
+	//fmt.Println("signature passed")
 	return set(k, v)
 }
 
@@ -234,12 +238,12 @@ func Followed(k string) string {
 }
 
 func Favored(k string) string {
-	fmt.Println(k)
+	//fmt.Println(k)
 	favs := suffix(k)
 
 	var tmp []string
 	for _, f := range favs {
-		fmt.Println(f)
+		//fmt.Println(f)
 		vs := strings.Split(string(f), FV)
 		fs := strings.Split(vs[0], "/")
 		tmp = append(tmp, fs[len(fs)-1])
