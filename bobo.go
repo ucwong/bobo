@@ -81,6 +81,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 				addr := u[len(u)-1]
 				res = Followed(FL + addr)
 			default:
+				res = "Method not found"
 			}
 		}
 	case "POST":
