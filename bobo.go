@@ -20,7 +20,6 @@ import (
 	"github.com/CortexFoundation/CortexTheseus/common/math"
 	"github.com/CortexFoundation/CortexTheseus/crypto"
 	"github.com/CortexFoundation/CortexTheseus/crypto/secp256k1"
-	//"github.com/CortexFoundation/CortexTheseus/log"
 
 	"golang.org/x/crypto/sha3"
 
@@ -71,15 +70,15 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			case "user":
 				res = UserDetails(uri)
 			case "favor":
-				res = Favor(uri)
+				res = FavorList(uri)
 			case "favored":
 				addr := u[len(u)-1]
-				res = Favored(FV + addr)
+				res = FavoredList(FV + addr)
 			case "follow":
-				res = Follow(uri)
+				res = FollowList(uri)
 			case "followed":
 				addr := u[len(u)-1]
-				res = Followed(FL + addr)
+				res = FollowedList(FL + addr)
 			default:
 				res = "Method not found"
 			}
@@ -103,24 +102,30 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			if time.Now().Unix()+int64(30) < timestamp {
 				//return errors.New("Signature disallowed future")
 			}
+
 			//TODO to address fmt check
 			u := strings.Split(uri, "/")
 			if len(u) > 1 {
 				method := u[len(u)-2]
 				addr := u[len(u)-1]
 
+				if !Verify(string(reqBody), addr, q.Get("sig"), timestamp) {
+					res = "Invalid signature"
+					return
+				}
+
 				//fmt.Println("method:" + method + ", addr:" + addr)
 				switch method {
 				case "user":
-					if err := Set(uri, string(reqBody), addr, q.Get("sig")); err != nil {
+					if err := Create(uri, string(reqBody)); err != nil {
 						res = fmt.Sprintf("%v", err)
 					}
 				case "favor":
-					if err := Set(uri+FV+to, to, addr, q.Get("sig")); err != nil {
+					if err := Favor(uri, to); err != nil {
 						res = "ERROR" //fmt.Sprintf("%v", err)
 					}
 				case "follow":
-					if err := Set(uri+FL+to, to, addr, q.Get("sig")); err != nil {
+					if err := Follow(uri, to); err != nil {
 						res = "ERROR" //fmt.Sprintf("%v", err)
 					}
 					//TODO
@@ -140,27 +145,35 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			to := strings.ToLower(body.Addr)
 			timestamp := body.Timestamp
 
-			if time.Now().Unix()-int64(30) > timestamp {
-				//return errors.New("Signature expired")
-			}
+			//if time.Now().Unix()-int64(30) > timestamp {
+			//return errors.New("Signature expired")
+			//}
 
-			if time.Now().Unix()+int64(15) < timestamp {
-				//return errors.New("Signature disallowed future")
-			}
+			//if time.Now().Unix()+int64(15) < timestamp {
+			//return errors.New("Signature disallowed future")
+			//}
 			u := strings.Split(uri, "/")
 			if len(u) > 1 {
 				method := u[len(u)-2]
 				addr := u[len(u)-1]
 
+				if !Verify(string(reqBody), addr, q.Get("sig"), timestamp) {
+					res = "Invalid signature"
+					return
+
+				}
+
 				log.Printf("%v %v", method, addr)
 				switch method {
 				case "favor":
-					if err := Del(uri+FV+to, string(reqBody), addr, q.Get("sig")); err != nil {
-						res = "ERROR" //fmt.Sprintf("%v", err)
+					if err := Del(uri + FV + to); err != nil {
+						//res = "ERROR" //fmt.Sprintf("%v", err)
+						res = fmt.Sprintf("%v", err)
 					}
 				case "follow":
-					if err := Del(uri+FL+to, string(reqBody), addr, q.Get("sig")); err != nil {
-						res = "ERROR" //fmt.Sprintf("%v", err)
+					if err := Del(uri + FL + to); err != nil {
+						//res = "ERROR" //fmt.Sprintf("%v", err)
+						res = fmt.Sprintf("%v", err)
 					}
 				default:
 					res = "Method not found"
@@ -171,6 +184,18 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		res = "Method not found"
 	}
 	fmt.Fprintf(w, res)
+}
+
+func Create(uri, v string) error {
+	return Set(uri, v)
+}
+
+func Favor(uri, to string) error {
+	return Set(uri+FV+to, to)
+}
+
+func Follow(uri, to string) error {
+	return Set(uri+FL+to, to)
 }
 
 func parseUri(uri string) (string, string) {
@@ -184,22 +209,45 @@ func UserDetails(k string) string {
 	return get(k)
 }
 
-func Set(k, v, addr, sig string) error {
+func Set(k, v string) error {
+	//if !Verify(v, addr, sig, timestamp) {
+	//	return errors.New("Invalid signature")
+	//}
+	return set(k, v)
+}
+
+func Del(k string) error {
+	//if !Verify(v, addr, sig, timestamp) {
+	//        return errors.New("Invalid signature")
+	//}
+	return del(k)
+}
+
+func Verify(msg, addr, sig string, timestamp int64) bool {
+	if time.Now().Unix()-int64(30) > timestamp {
+		//return errors.New("Signature expired")
+	}
+
+	if time.Now().Unix()+int64(15) < timestamp {
+		//return errors.New("Signature disallowed future")
+	}
 	//fmt.Printf("%v\n", []byte(v))
-	sig_, _ := SignHex(v, testpri)
+	sig_, _ := SignHex(msg, testpri)
 	//fmt.Printf("signature %s\n", hexutil.Encode(sig_[:]))
 	log.Printf("signature : %s", hexutil.Encode(sig_[:]))
 
-	m := Keccak256([]byte(v))
+	m := Keccak256([]byte(msg))
 	s := hexutil.MustDecode(sig)
 
 	if len(m) == 0 || len(s) == 0 {
-		return errors.New("Hex decode failed")
+		//return errors.New("Hex decode failed")
+		return false
 	}
 
 	recoveredPub, err := Ecrecover(m, s)
 	if err != nil {
-		return errors.New("Ecrecover failed")
+		//return errors.New("Ecrecover failed")
+		return false
 	}
 
 	pubKey, _ := UnmarshalPubkey(recoveredPub)
@@ -207,39 +255,43 @@ func Set(k, v, addr, sig string) error {
 	if common.HexToAddress(addr) != recoveredAddr {
 		log.Printf("Address mismatch: want: %v have: %v\n", addr, recoveredAddr.Hex())
 
-		return errors.New("Key mismatched")
+		//return errors.New("Key mismatched")
+		return false
 	}
 
 	if !VerifySignature(recoveredPub, m, s[:len(s)-1]) {
 		//fmt.Println("Signature unpassed")
-		return errors.New("Signature failed")
+		//return errors.New("Signature failed")
+		return false
 	}
-
-	//fmt.Println("signature passed")
-	return set(k, v)
+	return true
 }
 
-func Del(k, v, addr, sig string) error {
-	//TODO sig check including ecdsa and ts
-	return del(k)
-}
-
-func Favor(k string) string {
+func FavorList(k string) string {
 	res, _ := json.Marshal(prefix(k))
 	return string(res)
 }
 
-func Follow(k string) string {
+func FollowList(k string) string {
 	res, _ := json.Marshal(prefix(k))
 	return string(res)
 }
 
-func Followed(k string) string {
-	return ""
+func FollowedList(k string) string {
+	followers := suffix(k)
+
+	var tmp []string
+	for _, f := range followers {
+		vs := strings.Split(string(f), FL)
+		fs := strings.Split(vs[0], "/")
+		tmp = append(tmp, fs[len(fs)-1])
+
+	}
+	res, _ := json.Marshal(tmp)
+	return string(res)
 }
 
-func Favored(k string) string {
-	//fmt.Println(k)
+func FavoredList(k string) string {
 	favs := suffix(k)
 
 	var tmp []string
