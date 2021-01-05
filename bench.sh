@@ -2,7 +2,7 @@
 domain="http://share.cortexlabs.ai:8081"
 for i in {1..1}
 do
-	echo "Register a user detail ."
+	#echo "Register a user detail ."
 	curl -X POST -d "{\"ts\":1609310997, \"name\":\"jo\"}" ${domain}/user/0x970E8128AB834E8EAC17Ab8E3812F010678CF791?sig=0x15ce17f60e6825a4d5556867c30d3bc823f9f2dd0d55aa845a816f4518a081ca5e2c9fea9ec552e861d015306c6c7c4132135e97b0e695e01c751c51e5e7075d01
 	echo ""
 	#echo "Update a user detail ."

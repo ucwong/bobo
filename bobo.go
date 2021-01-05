@@ -58,7 +58,7 @@ func main() {
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("%v %v", r.URL, r.Method)
+	log.Printf("%v %v", r.Method, r.URL)
 	res := "OK"
 
 	uri := strings.ToLower(r.URL.Path)
@@ -145,7 +145,6 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			if !Verify(string(reqBody), addr, q.Get("sig"), body.Timestamp) {
 				res = "Invalid signature"
 				break
-
 			}
 
 			switch method {
@@ -176,23 +175,19 @@ func Unfollow(uri, to string) error {
 }
 
 func Create(uri, v string) error {
-	return Set(uri, v)
+	return set(uri, v)
 }
 
 func Favor(uri, to string) error {
-	return Set(uri+_FV_+to, to)
+	return set(uri+_FV_+to, to)
 }
 
 func Follow(uri, to string) error {
-	return Set(uri+_FL_+to, to)
+	return set(uri+_FL_+to, to)
 }
 
 func UserDetails(k string) string {
 	return get(k)
-}
-
-func Set(k, v string) error {
-	return set(k, v)
 }
 
 func Verify(msg, addr, sig string, timestamp int64) bool {
@@ -228,7 +223,6 @@ func Verify(msg, addr, sig string, timestamp int64) bool {
 	recoveredAddr := PubkeyToAddress(*pubKey)
 	if common.HexToAddress(addr) != recoveredAddr {
 		log.Printf("Address mismatch: want: %v have: %v\n", addr, recoveredAddr.Hex())
-
 		//return errors.New("Key mismatched")
 		return false
 	}
