@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 domain="http://share.cortexlabs.ai:8081"
 for i in {1..1}
 do

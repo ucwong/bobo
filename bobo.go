@@ -164,7 +164,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	default:
-		res = "Method not found"
+		res = "INVALID REQUEST TYPE"
 	}
 	fmt.Fprintf(w, res)
 }
