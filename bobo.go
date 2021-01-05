@@ -67,15 +67,15 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Invalid URL")
 		return
 	}
-	addr, method := u[len(u)-1], u[len(u)-2]
 
+	addr, method := u[len(u)-1], u[len(u)-2]
 	if !common.IsHexAddress(addr) {
 		fmt.Fprintf(w, "Invalid infohash format")
 		return
 	}
 	q := r.URL.Query()
 	switch r.Method {
-	case "GET":
+	case http.MethodGet:
 		switch method {
 		case "user":
 			res = UserDetails(uri)
@@ -90,7 +90,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		default:
 			res = "Method not found"
 		}
-	case "POST":
+	case http.MethodPost:
 		if reqBody, err := ioutil.ReadAll(r.Body); err == nil {
 			var body Body
 			if err := json.Unmarshal(reqBody, &body); err != nil {
@@ -104,9 +104,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 				res = "Invalid addr format"
 				break
 			}
-			timestamp := body.Timestamp
 
-			if !Verify(string(reqBody), addr, q.Get("sig"), timestamp) {
+			if !Verify(string(reqBody), addr, q.Get("sig"), body.Timestamp) {
 				res = "Invalid signature"
 				break
 			}
@@ -128,7 +127,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 				res = "Method not found"
 			}
 		}
-	case "DELETE":
+	case http.MethodDelete:
 		if reqBody, err := ioutil.ReadAll(r.Body); err == nil {
 			var body Body
 			if err := json.Unmarshal(reqBody, &body); err != nil {
@@ -136,15 +135,14 @@ func handler(w http.ResponseWriter, r *http.Request) {
 				res = fmt.Sprintf("%v", err)
 				break
 			}
-			to := strings.ToLower(body.Addr)
-			timestamp := body.Timestamp
 
+			to := strings.ToLower(body.Addr)
 			if len(to) > 0 && !common.IsHexAddress(to) {
 				res = "Invalid addr format"
 				break
 			}
 
-			if !Verify(string(reqBody), addr, q.Get("sig"), timestamp) {
+			if !Verify(string(reqBody), addr, q.Get("sig"), body.Timestamp) {
 				res = "Invalid signature"
 				break
 
