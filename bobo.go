@@ -42,9 +42,11 @@ var (
 	testpri       = "289c2857d4598e37fb9647507e47a309d6133539bf21a8b9cb6df88fd5232032"
 )
 
-const DigestLength = 32
-const FV = "_fv_"
-const FL = "_fl_"
+const (
+	DigestLength = 32
+	_FV_         = "_fv_"
+	_FL_         = "_fl_"
+)
 
 func main() {
 	if bg, err := badger.Open(badger.DefaultOptions(".badger")); err == nil {
@@ -64,21 +66,19 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		u := strings.Split(uri, "/")
 		if len(u) > 1 {
+			addr := u[len(u)-1]
 			method := u[len(u)-2]
-			//addr := u[len(u)-1]
 			switch method {
 			case "user":
 				res = UserDetails(uri)
 			case "favor":
 				res = FavorList(uri)
 			case "favored":
-				addr := u[len(u)-1]
-				res = FavoredList(FV + addr)
+				res = FavoredList(addr)
 			case "follow":
 				res = FollowList(uri)
 			case "followed":
-				addr := u[len(u)-1]
-				res = FollowedList(FL + addr)
+				res = FollowedList(addr)
 			default:
 				res = "Method not found"
 			}
@@ -88,7 +88,6 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			var body Body
 			if err := json.Unmarshal(reqBody, &body); err != nil {
 				log.Printf("%v", err)
-				//return errors.New("Invalid json")
 				res = "Invalid json"
 				break
 			}
@@ -114,7 +113,6 @@ func handler(w http.ResponseWriter, r *http.Request) {
 					break
 				}
 
-				//fmt.Println("method:" + method + ", addr:" + addr)
 				switch method {
 				case "user":
 					if err := Create(uri, string(reqBody)); err != nil {
@@ -122,13 +120,12 @@ func handler(w http.ResponseWriter, r *http.Request) {
 					}
 				case "favor":
 					if err := Favor(uri, to); err != nil {
-						res = "ERROR" //fmt.Sprintf("%v", err)
+						res = fmt.Sprintf("%v", err)
 					}
 				case "follow":
 					if err := Follow(uri, to); err != nil {
-						res = "ERROR" //fmt.Sprintf("%v", err)
+						res = fmt.Sprintf("%v", err)
 					}
-					//TODO
 				default:
 					res = "Method not found"
 				}
@@ -140,7 +137,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			if err := json.Unmarshal(reqBody, &body); err != nil {
 				log.Printf("%v", err)
 				//return errors.New("Invalid json")
-				res = "Invalid json"
+				res = fmt.Sprintf("%v", err)
 				break
 			}
 			to := strings.ToLower(body.Addr)
@@ -166,16 +163,14 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 				}
 
-				log.Printf("%v %v", method, addr)
+				//log.Printf("%v %v", method, addr)
 				switch method {
 				case "favor":
-					if err := Del(uri + FV + to); err != nil {
-						//res = "ERROR" //fmt.Sprintf("%v", err)
+					if err := Unfavor(uri, to); err != nil {
 						res = fmt.Sprintf("%v", err)
 					}
 				case "follow":
-					if err := Del(uri + FL + to); err != nil {
-						//res = "ERROR" //fmt.Sprintf("%v", err)
+					if err := Unfollow(uri, to); err != nil {
 						res = fmt.Sprintf("%v", err)
 					}
 				default:
@@ -189,17 +184,24 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, res)
 }
 
+func Unfavor(uri, to string) error {
+	return del(uri + _FV_ + to)
+}
+
+func Unfollow(uri, to string) error {
+	return del(uri + _FL_ + to)
+}
+
 func Create(uri, v string) error {
 	return Set(uri, v)
 }
 
 func Favor(uri, to string) error {
-	//sequence(FV + to)
-	return Set(uri+FV+to, to)
+	return Set(uri+_FV_+to, to)
 }
 
 func Follow(uri, to string) error {
-	return Set(uri+FL+to, to)
+	return Set(uri+_FL_+to, to)
 }
 
 func parseUri(uri string) (string, string) {
@@ -217,22 +219,20 @@ func Set(k, v string) error {
 	return set(k, v)
 }
 
-func Del(k string) error {
-	return del(k)
-}
-
 func Verify(msg, addr, sig string, timestamp int64) bool {
 	if time.Now().Unix()-int64(30) > timestamp {
 		//return errors.New("Signature expired")
+		//TODO
+		//return false
 	}
 
 	if time.Now().Unix()+int64(15) < timestamp {
 		//return errors.New("Signature disallowed future")
+		//TODO
+		//return false
 	}
-	//fmt.Printf("%v\n", []byte(v))
-	sig_, _ := SignHex(msg, testpri)
-	//fmt.Printf("signature %s\n", hexutil.Encode(sig_[:]))
-	log.Printf("signature : %s", hexutil.Encode(sig_[:]))
+	//sig_, _ := SignHex(msg, testpri)
+	//log.Printf("signature : %s", hexutil.Encode(sig_[:]))
 
 	m := Keccak256([]byte(msg))
 	s := hexutil.MustDecode(sig)
@@ -276,13 +276,16 @@ func FollowList(k string) string {
 }
 
 func FollowedList(k string) string {
+	k = _FL_ + k
 	followers := suffix(k)
 
 	var tmp []string
 	for _, f := range followers {
-		vs := strings.Split(string(f), FL)
+		vs := strings.Split(string(f), _FL_)
 		fs := strings.Split(vs[0], "/")
-		tmp = append(tmp, fs[len(fs)-1])
+		if len(fs) > 0 {
+			tmp = append(tmp, fs[len(fs)-1])
+		}
 
 	}
 	res, _ := json.Marshal(tmp)
@@ -290,15 +293,16 @@ func FollowedList(k string) string {
 }
 
 func FavoredList(k string) string {
+	k = _FV_ + k
 	favs := suffix(k)
 
 	var tmp []string
 	for _, f := range favs {
-		//fmt.Println(f)
-		vs := strings.Split(string(f), FV)
+		vs := strings.Split(string(f), _FV_)
 		fs := strings.Split(vs[0], "/")
-		tmp = append(tmp, fs[len(fs)-1])
-
+		if len(fs) > 0 {
+			tmp = append(tmp, fs[len(fs)-1])
+		}
 	}
 	res, _ := json.Marshal(tmp)
 	return string(res)

@@ -54,5 +54,7 @@ do
 	echo ""
 	curl -X GET ${domain}/followed/0x564286362092d8e7936f0549571a803b203aaced
 	echo ""
+	curl -X POST -d "{\"ts\":1609310997, \"addr\":\"0x564286362092d8e7936f0549571a803b203aaced\"}" ${domain}/follow/0x970E8128AB834E8EAC17Ab8E3812F010678CF791?sig=0x6cb41f30e9dc732c4fc01cd3288c020a7473be57510a63dcd9d696836f2495ff7c0544fca083776f17d050b93d92e140323eb1c3c179e7e3b830db710afddc3e01
+	echo ""
 	echo "Finish"
 done
