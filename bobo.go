@@ -60,28 +60,35 @@ func main() {
 func handler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("%v %v", r.URL, r.Method)
 	res := "OK"
+
 	uri := strings.ToLower(r.URL.Path)
+	u := strings.Split(uri, "/")
+	if len(u) < 2 {
+		fmt.Fprintf(w, "Invalid URL")
+		return
+	}
+	addr, method := u[len(u)-1], u[len(u)-2]
+
+	if !common.IsHexAddress(addr) {
+		fmt.Fprintf(w, "Invalid infohash format")
+		return
+	}
 	q := r.URL.Query()
 	switch r.Method {
 	case "GET":
-		u := strings.Split(uri, "/")
-		if len(u) > 1 {
-			addr := u[len(u)-1]
-			method := u[len(u)-2]
-			switch method {
-			case "user":
-				res = UserDetails(uri)
-			case "favor":
-				res = FavorList(uri)
-			case "favored":
-				res = FavoredList(addr)
-			case "follow":
-				res = FollowList(uri)
-			case "followed":
-				res = FollowedList(addr)
-			default:
-				res = "Method not found"
-			}
+		switch method {
+		case "user":
+			res = UserDetails(uri)
+		case "favor":
+			res = FavorList(uri)
+		case "favored":
+			res = FavoredList(addr)
+		case "follow":
+			res = FollowList(uri)
+		case "followed":
+			res = FollowedList(addr)
+		default:
+			res = "Method not found"
 		}
 	case "POST":
 		if reqBody, err := ioutil.ReadAll(r.Body); err == nil {
@@ -93,42 +100,32 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			}
 
 			to := strings.ToLower(body.Addr)
-			//if !common.IsHexAddress(to) {
-			//	res = "Invalid addr format"
-			//	break
-			//}
+			if len(to) > 0 && !common.IsHexAddress(to) {
+				res = "Invalid addr format"
+				break
+			}
 			timestamp := body.Timestamp
 
-			u := strings.Split(uri, "/")
-			if len(u) > 1 {
-				method := u[len(u)-2]
-				addr := u[len(u)-1]
-				if !common.IsHexAddress(addr) {
-					res = "Invalid infohash format"
-					break
-				}
+			if !Verify(string(reqBody), addr, q.Get("sig"), timestamp) {
+				res = "Invalid signature"
+				break
+			}
 
-				if !Verify(string(reqBody), addr, q.Get("sig"), timestamp) {
-					res = "Invalid signature"
-					break
+			switch method {
+			case "user":
+				if err := Create(uri, string(reqBody)); err != nil {
+					res = fmt.Sprintf("%v", err)
 				}
-
-				switch method {
-				case "user":
-					if err := Create(uri, string(reqBody)); err != nil {
-						res = fmt.Sprintf("%v", err)
-					}
-				case "favor":
-					if err := Favor(uri, to); err != nil {
-						res = fmt.Sprintf("%v", err)
-					}
-				case "follow":
-					if err := Follow(uri, to); err != nil {
-						res = fmt.Sprintf("%v", err)
-					}
-				default:
-					res = "Method not found"
+			case "favor":
+				if err := Favor(uri, to); err != nil {
+					res = fmt.Sprintf("%v", err)
 				}
+			case "follow":
+				if err := Follow(uri, to); err != nil {
+					res = fmt.Sprintf("%v", err)
+				}
+			default:
+				res = "Method not found"
 			}
 		}
 	case "DELETE":
@@ -136,46 +133,34 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			var body Body
 			if err := json.Unmarshal(reqBody, &body); err != nil {
 				log.Printf("%v", err)
-				//return errors.New("Invalid json")
 				res = fmt.Sprintf("%v", err)
 				break
 			}
 			to := strings.ToLower(body.Addr)
 			timestamp := body.Timestamp
 
-			//if !common.IsHexAddress(to) {
-			//	res = "Invalid addr format"
-			//	break
-			//}
+			if len(to) > 0 && !common.IsHexAddress(to) {
+				res = "Invalid addr format"
+				break
+			}
 
-			u := strings.Split(uri, "/")
-			if len(u) > 1 {
-				method := u[len(u)-2]
-				addr := u[len(u)-1]
-				if !common.IsHexAddress(addr) {
-					res = "Invalid addr format"
-					break
+			if !Verify(string(reqBody), addr, q.Get("sig"), timestamp) {
+				res = "Invalid signature"
+				break
+
+			}
+
+			switch method {
+			case "favor":
+				if err := Unfavor(uri, to); err != nil {
+					res = fmt.Sprintf("%v", err)
 				}
-
-				if !Verify(string(reqBody), addr, q.Get("sig"), timestamp) {
-					res = "Invalid signature"
-					break
-
+			case "follow":
+				if err := Unfollow(uri, to); err != nil {
+					res = fmt.Sprintf("%v", err)
 				}
-
-				//log.Printf("%v %v", method, addr)
-				switch method {
-				case "favor":
-					if err := Unfavor(uri, to); err != nil {
-						res = fmt.Sprintf("%v", err)
-					}
-				case "follow":
-					if err := Unfollow(uri, to); err != nil {
-						res = fmt.Sprintf("%v", err)
-					}
-				default:
-					res = "Method not found"
-				}
+			default:
+				res = "Method not found"
 			}
 		}
 	default:
@@ -202,13 +187,6 @@ func Favor(uri, to string) error {
 
 func Follow(uri, to string) error {
 	return Set(uri+_FL_+to, to)
-}
-
-func parseUri(uri string) (string, string) {
-	u := strings.Split(uri, "/")
-	method := u[len(u)-2]
-	addr := u[len(u)-1]
-	return method, addr
 }
 
 func UserDetails(k string) string {
