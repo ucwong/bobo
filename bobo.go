@@ -194,6 +194,7 @@ func Create(uri, v string) error {
 }
 
 func Favor(uri, to string) error {
+	//sequence(FV + to)
 	return Set(uri+FV+to, to)
 }
 
@@ -412,6 +413,16 @@ func suffix(suf string) (res []string) {
 	})
 	return
 }
+
+func sequence(key string) {
+	seq, _ := db.GetSequence([]byte(key), 1000)
+	defer seq.Release()
+	//for {
+	num, _ := seq.Next()
+	log.Printf("seq %v", num)
+	//}
+}
+
 func VerifySignature(pubkey, hash, signature []byte) bool {
 	return secp256k1.VerifySignature(pubkey, hash, signature)
 }
