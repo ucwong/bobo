@@ -112,7 +112,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 			switch method {
 			case "user":
-				if err := Create(uri, string(reqBody)); err != nil {
+				if err := UserCreate(uri, string(reqBody)); err != nil {
 					res = fmt.Sprintf("%v", err)
 				}
 			case "favor":
@@ -174,7 +174,7 @@ func Unfollow(uri, to string) error {
 	return del(uri + _FL_ + to)
 }
 
-func Create(uri, v string) error {
+func UserCreate(uri, v string) error {
 	return set(uri, v)
 }
 
