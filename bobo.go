@@ -202,20 +202,19 @@ func Verify(msg, addr, sig string, timestamp int64) bool {
 		//TODO
 		//return false
 	}
-	//sig_, _ := SignHex(msg, testpri)
-	//log.Printf("signature : %s", hexutil.Encode(sig_[:]))
+
+	sig_, _ := SignHex(msg, testpri)
+	log.Printf("[signature] : %s", hexutil.Encode(sig_[:]))
 
 	m := Keccak256([]byte(msg))
 	s := hexutil.MustDecode(sig)
 
 	if len(m) == 0 || len(s) == 0 {
-		//return errors.New("Hex decode failed")
 		return false
 	}
 
 	recoveredPub, err := Ecrecover(m, s)
 	if err != nil {
-		//return errors.New("Ecrecover failed")
 		return false
 	}
 
@@ -223,13 +222,10 @@ func Verify(msg, addr, sig string, timestamp int64) bool {
 	recoveredAddr := PubkeyToAddress(*pubKey)
 	if common.HexToAddress(addr) != recoveredAddr {
 		log.Printf("Address mismatch: want: %v have: %v\n", addr, recoveredAddr.Hex())
-		//return errors.New("Key mismatched")
 		return false
 	}
 
 	if !VerifySignature(recoveredPub, m, s[:len(s)-1]) {
-		//fmt.Println("Signature unpassed")
-		//return errors.New("Signature failed")
 		return false
 	}
 	return true
