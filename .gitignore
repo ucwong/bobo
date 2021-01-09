@@ -4,3 +4,5 @@ bobo
 .badger
 *.log
 *.log.*
+config.json.*
+config.json
