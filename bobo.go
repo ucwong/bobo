@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	badger "github.com/dgraph-io/badger/v2"
+	badger "github.com/dgraph-io/badger/v3"
 )
 
 var db *badger.DB
