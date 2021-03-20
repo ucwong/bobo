@@ -3,3 +3,6 @@ badger
 bobo
 .badger
 *.log
+.badger*
+.bolt
+.bolt*
