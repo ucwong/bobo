@@ -47,7 +47,7 @@ func get(k string) (v string) {
 	if len(k) == 0 {
 		return
 	}
-	v = string(db.Get([]byte(k[:])))
+	v = string(db.Get([]byte(k)))
 	return
 }
 
@@ -56,7 +56,7 @@ func set(k, v string) (err error) {
 		return
 	}
 
-	err = db.Set([]byte(k[:]), []byte(v[:]))
+	err = db.Set([]byte(k), []byte(v))
 
 	return
 }
