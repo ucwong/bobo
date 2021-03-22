@@ -5,18 +5,15 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	badger "github.com/dgraph-io/badger/v3"
+	"github.com/ucwong/bucket"
 )
 
-var db *badger.DB
+var db bucket.Bucket
 
 func main() {
-	if bg, err := badger.Open(badger.DefaultOptions(".badger")); err == nil {
-		defer bg.Close()
-		db = bg
-		http.HandleFunc("/", handler)
-		http.ListenAndServe(":8080", nil)
-	}
+	db = bucket.New()
+	http.HandleFunc("/", handler)
+	http.ListenAndServe(":8888", nil)
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
@@ -50,14 +47,7 @@ func get(k string) (v string) {
 	if len(k) == 0 {
 		return
 	}
-	db.View(func(txn *badger.Txn) error {
-		if item, err := txn.Get([]byte(k)); err == nil {
-			if val, err := item.ValueCopy(nil); err == nil {
-				v = string(val)
-			}
-		}
-		return nil
-	})
+	v = string(db.Get([]byte(k)))
 	return
 }
 
@@ -65,8 +55,8 @@ func set(k, v string) (err error) {
 	if len(k) == 0 || len(v) == 0 {
 		return
 	}
-	err = db.Update(func(txn *badger.Txn) error {
-		return txn.Set([]byte(k), []byte(v))
-	})
+
+	err = db.Set([]byte(k), []byte(v))
+
 	return
 }
