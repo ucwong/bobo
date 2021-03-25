@@ -11,7 +11,7 @@ import (
 var db bucket.Bucket
 
 func main() {
-	db = bucket.New()
+	db = bucket.Badger(".badger")
 	http.HandleFunc("/", handler)
 	http.ListenAndServe(":8888", nil)
 }
