@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/ucwong/bucket"
+	"github.com/ucwong/golang-kv"
 )
 
 var db bucket.Bucket
