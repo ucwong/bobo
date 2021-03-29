@@ -8,10 +8,10 @@ import (
 	"github.com/ucwong/golang-kv"
 )
 
-var db bucket.Bucket
+var db kv.Bucket
 
 func main() {
-	db = bucket.Badger(".badger")
+	db = kv.Badger(".badger")
 	http.HandleFunc("/", handler)
 	http.ListenAndServe(":8888", nil)
 }
