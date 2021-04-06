@@ -12,8 +12,9 @@ var db kv.Bucket
 
 func main() {
 	db = kv.Badger(".badger")
-	http.HandleFunc("/", handler)
-	http.ListenAndServe(":8888", nil)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", handler)
+	http.ListenAndServe("127.0.0.1:8080", mux)
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
