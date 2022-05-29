@@ -11,7 +11,7 @@ import (
 var db kv.Bucket
 
 func main() {
-	db = kv.Badger(".badger")
+	db = kv.Badger("")
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", handler)
 	http.ListenAndServe("127.0.0.1:8080", mux)
