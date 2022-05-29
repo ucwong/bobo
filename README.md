@@ -27,4 +27,4 @@ sys	0m3.074s
 ```
 
 #### Storage
-https://github.com/dgraph-io/badger
+https://github.com/ucwong/golang-kv
