@@ -1,6 +1,6 @@
 module github.com/ucwong/bobo
 
-go 1.18
+go 1.19
 
 require github.com/ucwong/golang-kv v1.0.7
 
