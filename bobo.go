@@ -44,20 +44,10 @@ func Set(k, v string) error {
 	return set(k, v)
 }
 
-func get(k string) (v string) {
-	if len(k) == 0 {
-		return
-	}
-	v = string(db.Get([]byte(k)))
-	return
+func get(k string) string {
+	return string(db.Get([]byte(k)))
 }
 
-func set(k, v string) (err error) {
-	if len(k) == 0 || len(v) == 0 {
-		return
-	}
-
-	err = db.Set([]byte(k), []byte(v))
-
-	return
+func set(k, v string) error {
+	return db.Set([]byte(k), []byte(v))
 }
