@@ -36,17 +36,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func Get(k string) string {
-	return get(k)
-}
-
-func Set(k, v string) error {
-	return set(k, v)
-}
-
-func get(k string) string {
 	return string(db.Get([]byte(k)))
 }
 
-func set(k, v string) error {
+func Set(k, v string) error {
 	return db.Set([]byte(k), []byte(v))
 }
