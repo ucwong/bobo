@@ -2,7 +2,7 @@ module github.com/ucwong/bobo
 
 go 1.19
 
-require github.com/ucwong/golang-kv v1.0.7
+require github.com/ucwong/golang-kv v1.0.9
 
 require (
 	github.com/cespare/xxhash v1.1.0 // indirect
@@ -16,14 +16,14 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/flatbuffers v2.0.8+incompatible // indirect
-	github.com/klauspost/compress v1.15.9 // indirect
+	github.com/klauspost/compress v1.15.10 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/syndtr/goleveldb v1.0.1-0.20220721030215-126854af5e6d // indirect
 	go.etcd.io/bbolt v1.3.7-0.20220226045046-fd5535f71f48 // indirect
 	go.opencensus.io v0.23.0 // indirect
-	golang.org/x/net v0.0.0-20220826154423-83b083e8dc8b // indirect
-	golang.org/x/sys v0.0.0-20220829200755-d48e67d00261 // indirect
+	golang.org/x/net v0.0.0-20220909164309-bea034e7d591 // indirect
+	golang.org/x/sys v0.0.0-20220915200043-7b5979e65e41 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 )
 
-require github.com/ucwong/go-ttlmap v1.0.2-0.20220531033718-59436cfae99c // indirect
+require github.com/ucwong/go-ttlmap v1.0.2-0.20220906034005-3632715c09cf // indirect
