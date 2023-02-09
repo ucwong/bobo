@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
+	"io"
 
 	"github.com/ucwong/golang-kv"
 )
@@ -24,7 +24,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		res = Get(uri)
 	case "POST":
-		if reqBody, err := ioutil.ReadAll(r.Body); err == nil {
+		if reqBody, err := io.ReadAll(r.Body); err == nil {
 			if err := Set(uri, string(reqBody)); err != nil {
 				res = "ERROR" //fmt.Sprintf("%v", err)
 			}
